@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O2 -Wall -Werror
+CFLAGS = -O2
 
 SECCOMP_SOURCES = seccomp.c seccomp.h main.c
 

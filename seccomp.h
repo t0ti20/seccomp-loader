@@ -1,13 +1,27 @@
 #ifndef X_SECCOMP_H
-#define X_SUPPORT_H
+#define X_SECCOMP_H
 
 
 #include <stdio.h>
 #include <stdint.h>
+#include <errno.h>
+#include <stdarg.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include <sys/prctl.h>
+#include <sys/stat.h>
+#include <sys/syscall.h>
 
 #include <linux/filter.h>
+#include <linux/prctl.h>
+#include <linux/seccomp.h>
+#include <linux/filter.h>
 
-struct sc_seccomp_file_header {
+struct sc_seccomp_file_header
+{
 	char header[2];
 	uint8_t version;
 	uint8_t unrestricted;

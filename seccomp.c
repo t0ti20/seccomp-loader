@@ -1,19 +1,3 @@
-#include <errno.h>
-#include <limits.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-#include <sys/prctl.h>
-#include <sys/stat.h>
-#include <sys/syscall.h>
-
-#include <linux/filter.h>
-#include <linux/prctl.h>
-#include <linux/seccomp.h>
-
 #include "seccomp.h"
 
 #define MAX_BPF_SIZE 32*1024
@@ -35,29 +19,38 @@ FILE* sc_must_read_and_validate_header_from_file(const char *profile_path, struc
 		die("cannot open seccomp filter %s", profile_path);
 	}
 	size_t num_read = fread(hdr, 1, sizeof(struct sc_seccomp_file_header), file);
-	if (ferror(file) != 0) {
-		die("cannot read seccomp profile %s", profile_path);
-	}
-	if (num_read < sizeof(struct sc_seccomp_file_header)) {
-		die("short read on seccomp header: %zu", num_read);
-	}
+    if (num_read != 1)
+	{
+        fclose(file);
+        if (feof(file))
+		{
+            die("unexpected end-of-file while reading seccomp profile %s", profile_path);
+        }else
+		{
+            die("error reading seccomp profile %s", profile_path);
+        }
+    }
 	return file;
 }
 
 void sc_must_read_filter_from_file(FILE *file, uint32_t len_bytes, struct sock_fprog *prog)
 {
 	prog->len = len_bytes / sizeof(struct sock_filter);
-	prog->filter = (struct sock_filter *)malloc(MAX_BPF_SIZE);
+	prog->filter = (struct sock_filter *)malloc(len_bytes);
 	if (prog->filter == NULL) {
+		fclose(file);
 		die("cannot allocate %u bytes of memory for seccomp filter ", len_bytes);
 	}
 	size_t num_read = fread(prog->filter, 1, len_bytes, file);
-	if (ferror(file)) {
-		die("cannot read filter");
-	}
-	if (num_read != len_bytes) {
-		die("short read for filter %zu != %i", num_read, len_bytes);
-	}
+    if (num_read != len_bytes) {
+        free(prog->filter);
+        fclose(file);
+        if (feof(file)) {
+            die("unexpected end-of-file while reading filter");
+        } else {
+            die("error reading filter");
+        }
+    }
 }
 
 int seccomp(unsigned int operation, unsigned int flags, void *args) {

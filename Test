@@ -1,0 +1,26 @@
+{
+    "seccomp": {
+        "default_action": "SCMP_ACT_ALLOW",
+        "architectures": [
+            "SCMP_ARCH_X86_64",
+            "SCMP_ARCH_X86"
+        ],
+        "syscalls": [
+            {
+                "names": ["read"],
+                "action": "SCMP_ACT_ALLOW",
+                "args": []
+            },
+            {
+                "names": ["write"],
+                "action": "SCMP_ACT_ALLOW",
+                "args": []
+            },
+            {
+                "names": ["exit", "exit_group"],
+                "action": "SCMP_ACT_ALLOW",
+                "args": []
+            }
+        ]
+    }
+}
